@@ -9,13 +9,14 @@
 %   data = soundPreProcess('nmFC_0001.wav')
 %==========================================================================
 function data = soundPreProcess(filename)
-    WindowDurationInSeconds = 50.0*10^(-3) %window size: 50ms 
-    ShiftDurationInSeconds = 10.0*10^(-3) % 
 %% read data
     [y, fps] = audioread(filename); % read the audio data
     y = y(:, 1);%only check one chanel 
-    WindowFrameCount = fps*WindowDurationInSeconds
-    ShiftFrameCount = fps*ShiftDurationInSeconds
+    y = zscore(y);%normalize
+    WindowDurationInSeconds = 50.0*10^(-3); %window size: 50ms 
+    ShiftDurationInSeconds = 10.0*10^(-3); % 
+    WindowFrameCount = fps*WindowDurationInSeconds;
+    ShiftFrameCount = fps*ShiftDurationInSeconds;
     
 %% energy checking
     filelength = numel(y);
@@ -28,7 +29,7 @@ function data = soundPreProcess(filename)
         thiswindow = y(windowIndex:windowEndIndex);
         energy = thiswindow' * thiswindow / WindowFrameCount;
         energies = [energies; energy];
-        if (energy > 0.0001)
+        if (energy > 0.5) %threshold
             passenergies = [passenergies; energy];
             data = [data; y(windowIndex:shiftEndIndex)]; 
         end
@@ -52,19 +53,21 @@ function data = soundPreProcess(filename)
     maxPitch = 200;
     deltaLow = floor(fps / maxPitch);
     deltaHigh = ceil(fps / minPitch);
-    Xcorre = zeros(deltaHigh - deltaLow + 1, 1);;
-    TotalSamples = numel(data);
-    for delta = deltaLow : deltaHigh
-        sum = 0;
-        for i=1 : TotalSamples - delta
-            sum = sum + (data(i) * data(i + delta));
-        end
-        Xcorre(delta - deltaLow + 1) = Xcorre(delta - deltaLow + 1) + sum;
-    end
     
-    [pks,locs]=findpeaks(Xcorre);
-  
-    delta = max(fps./diff(locs));
+    [r, lags] = xcorr(data);
+    %smooth to avoid noise. 
+    r = smooth(r(find(lags == deltaLow) : find(lags == deltaHigh)), deltaLow / 2);
+    figure(3);
+    plot([deltaLow: deltaHigh], r);
+    xlabel('Lag');
+    ylabel('Autocorrelation');
+    [pks,locs]=findpeaks(r);
+    figure(4);
+    stem(locs, pks);
+    tmp = diff(locs);
+    tmp = tmp(tmp >= deltaLow & tmp <= deltaHigh);
+    assert(~isempty(tmp), 'It is not voiced!');
+    delta = min(tmp);
 
 %% nasalized checking
 
