@@ -1,4 +1,4 @@
-mport numpy as np
+import numpy as np
 import soundfile as sf
 from soundfile import SEEK_END
 import math
@@ -8,7 +8,10 @@ def GetSoundFile(filePath):
     sdata = s.read()
     s.close()
     # only look at left channel for now, index 0
-    return sdata[:,0]
+    if len(sdata.shape) == 2:
+        return sdata[:,0]
+    else:
+        return sdata
 
 def GetStatistic(sdata):
     return max(sdata), min(sdata), np.mean(sdata), np.std(sdata)
