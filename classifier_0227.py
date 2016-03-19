@@ -48,33 +48,36 @@ def parseData(filename):
         # plt.show(block=True)
     return X
 
-
 nasal = glob('/Users/Eric/Dropbox/Voice Autism Vocal Samples/testing/Nasalized/*')
 normal = glob('/Users/Eric/Dropbox/Voice Autism Vocal Samples/testing/Normal/*')
-random.shuffle(nasal)
-random.shuffle(normal)
-X, y = [], []
+
+# random.shuffle(nasal)
+# random.shuffle(normal)
+
+# nasal_train = 
+X,y = [],[]
 for filename in nasal:
-    data = parseData(filename)
+    data = parseData(filename) 
     X += data
     y += [1] * len(data)
+
 for filename in normal:
     data = parseData(filename) 
     X += data
     y += [0] * len(data)
 
-N = int(len(X) * 9 / 10)
-X_train, y_train = X[:N], y[:N]
-X_test, y_test = X[N:], np.array(y[N:])
+# N = int(len(X) * 9 / 10)
+# X_train, y_train = X[:N], y[:N]
+# X_test, y_test = X[N:], np.array(y[N:])
 
 
-N_train = int(len(X)*7/10)
-N_valid = int(len(X)*9/10)
+N_train = int(len(X)*6/10)
+N_valid = int(len(X)*8/10)
 X_train, y_train = X[:N_train], y[:N_train]
 X_valid, y_valid = X[N_train:N_valid],y[N_train:N_valid]
 X_test, y_test = X[N_valid:], np.array(y[N_valid:])
 
-Cs = np.logspace(-2, 5, 50)
+Cs = np.logspace(-2, 5, 10)
 valid_predict = []
 
 for C in Cs:
@@ -93,6 +96,8 @@ print("C:",C, "Accurary(valid):", np.max(valid_predict))
 estimator = LogisticRegression(class_weight='auto', C=C)
 estimator.fit(X_train, y_train)
 y_predict = estimator.predict(X_test)
+print(y_predict)
+print(y_test)
 print ("Accurary(test):",1.0 * np.sum(y_predict == y_test) / len(y_test))
 
 false_nasal = 0
@@ -106,7 +111,7 @@ for i in range(len(y_test)):
 print("False Nasal: ",false_nasal/len(y_test))
 print("False Normal: ",false_normal/len(y_test))
 
-print(Cs)
-print(valid_predict)
+# print(Cs)
+# print(valid_predict)
 plt.plot(Cs,valid_predict)
 plt.show()
