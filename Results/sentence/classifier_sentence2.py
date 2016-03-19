@@ -64,6 +64,7 @@ normal = glob('/Users/feichao/Dropbox/Vocal Samples/Normal/*'+sentence+'.wav')
 #normal = glob('/Users/feichao/Downloads/Normal/*')
 
 #pdb.set_trace()
+random.seed(100)
 random.shuffle(nasal)
 random.shuffle(normal)
 X, y = [], []
